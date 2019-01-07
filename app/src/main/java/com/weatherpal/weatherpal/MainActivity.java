@@ -1,18 +1,22 @@
 package com.weatherpal.weatherpal;
 
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
+import android.os.IBinder;
+import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.support.v4.view.ViewPager;
 import android.support.design.widget.TabLayout;
-import android.support.design.widget.TabItem;
+import android.widget.Toast;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements HomeFragment.UpdateNotifListener, ServiceConnection {
+    private NotificationService s;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,15 +37,33 @@ public class MainActivity extends AppCompatActivity {
         tabLayout.getTabAt(1).setIcon(R.drawable.menu_message);
         tabLayout.getTabAt(2).setIcon(R.drawable.menu_location);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
     }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Intent intent= new Intent(this, NotificationService.class);
+        bindService(intent, this, Context.BIND_AUTO_CREATE);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        unbindService(this);
+    }
+
+    @Override
+    public void onServiceConnected(ComponentName name, IBinder binder) {
+        NotificationService.MyBinder b = (NotificationService.MyBinder) binder;
+        s = b.getService();
+        Toast.makeText(MainActivity.this, "NotificationService Connected", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onServiceDisconnected(ComponentName name) {
+        s = null;
+    }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -64,6 +86,28 @@ public class MainActivity extends AppCompatActivity {
 
         return super.onOptionsItemSelected(item);
     }
+
+    @Override
+    public void updateNotifications(String message) {
+        //String tag = "android:switcher:" + R.id.viewPager + ":" + 1;
+        //FragmentTwo f = (FragmentTwo) getSupportFragmentManager().findFragmentByTag(tag);
+        //f.displayReceivedData(message);
+
+        // use this to start and trigger a service
+        Intent i= new Intent(getApplicationContext(), NotificationService.class);
+
+        // potentially add data to the intent
+        i.putExtra("Location", "Value for location");
+        this.startService(i);
+
+        if (s != null) {
+            s.createNotification();
+
+        }
+
+    }
+
+
 
 
 }
