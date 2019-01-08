@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
@@ -89,9 +88,6 @@ public class MainActivity extends AppCompatActivity implements HomeFragment.Upda
 
     @Override
     public void updateNotifications(String message) {
-        //String tag = "android:switcher:" + R.id.viewPager + ":" + 1;
-        //FragmentTwo f = (FragmentTwo) getSupportFragmentManager().findFragmentByTag(tag);
-        //f.displayReceivedData(message);
 
         // use this to start and trigger a service
         Intent i= new Intent(getApplicationContext(), NotificationService.class);
@@ -101,13 +97,9 @@ public class MainActivity extends AppCompatActivity implements HomeFragment.Upda
         this.startService(i);
 
         if (s != null) {
-            s.createNotification();
-
+            s.updateAllNotifications();
         }
 
     }
-
-
-
 
 }

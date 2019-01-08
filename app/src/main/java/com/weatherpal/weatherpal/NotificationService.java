@@ -12,6 +12,17 @@ import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
 import android.widget.Toast;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
+import com.orhanobut.logger.AndroidLogAdapter;
+import com.orhanobut.logger.Logger;
+
+import org.json.JSONObject;
+
 
 public class NotificationService extends Service {
     private final IBinder mBinder = new MyBinder();
@@ -38,13 +49,55 @@ public class NotificationService extends Service {
         }
     }
 
-    //  createNotification(56, R.drawable.ic_launcher, "New Message",
-//      "There is a new message from Bob!");
+    public void updateAllNotifications() {
+        //send GET request for weather forecast
 
-    public void createNotification() {
+        // Instantiate the RequestQueue.
+        RequestQueue queue = Volley.newRequestQueue(this);
 
-        Bitmap largeIcon = BitmapFactory.decodeResource(getResources(),
-                R.drawable.picture);
+        //TODO add your personal key
+        String url ="https://api.darksky.net/forecast/key/56.946285,24.105078";
+
+        // Request a string response from the provided URL.
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest
+                (Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+
+                        showNotifications(response);
+                    }
+                }, new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+
+                        Toast.makeText(NotificationService.this, "Mēģini vēlreiz! Kaut kas nogāja greizi..", Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+        // Add the request to the RequestQueue.
+        queue.add(jsonObjectRequest);
+
+        return;
+    }
+
+    public void showNotifications(JSONObject data) {
+
+        //logging out the result of GET request for weather forecast in Riga
+        Logger.addLogAdapter(new AndroidLogAdapter());
+        Logger.d("Data - Weather forecast: "+ data);
+
+        //TODO check if json data are valid json object
+
+        //TODO add logic which notifications to show
+        createNotification(0, "Brīdinājums", "Laiks ārā solās būt īpaši ledaini auksts - saģērbies kārtīgi! Un neaizmirsti cimdus un cepuri!", R.drawable.picture );
+        createNotification(1, "Novēlējums", "Lai tev forša diena!", R.drawable.picture );
+        Toast.makeText(this, "Notifications Created", Toast.LENGTH_SHORT).show();
+    }
+
+
+    public void createNotification(Integer id, String title, String text, int picture ) {
+
+        Bitmap largeIcon = BitmapFactory.decodeResource(getResources(), picture);
 
         // Configure the channel
         int importance = NotificationManager.IMPORTANCE_DEFAULT;
@@ -60,13 +113,11 @@ public class NotificationService extends Service {
                 new NotificationCompat.Builder(this, "myChannelId")
                         .setSmallIcon(R.drawable.menu_message)
                         .setLargeIcon(largeIcon)
-                        .setContentTitle("Brīdinājums")
-                        .setStyle(new NotificationCompat.BigTextStyle().bigText("Laiks ārā solās būt īpaši ledaini auksts - saģērbies kārtīgi! Un neaizmirsti cimdus un cepuri!"));
+                        .setContentTitle(title)
+                        .setStyle(new NotificationCompat.BigTextStyle().bigText(text));
 
         // mId allows you to update the notification later on.
-        mNotificationManager.notify(0, mBuilder.build());
-
-        Toast.makeText(this, "Notification Created", Toast.LENGTH_SHORT).show();
+        mNotificationManager.notify(id, mBuilder.build());
 
         return;
     }
