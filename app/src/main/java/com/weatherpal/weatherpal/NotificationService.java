@@ -39,7 +39,6 @@ public class NotificationService extends Service {
 
     @Override
     public IBinder onBind(Intent intent) {
-
         return mBinder;
     }
 
@@ -85,12 +84,15 @@ public class NotificationService extends Service {
         //logging out the result of GET request for weather forecast in Riga
         Logger.addLogAdapter(new AndroidLogAdapter());
         Logger.d("Data - Weather forecast: "+ data);
+        Logger.d("Daily Forecast: "+ data);
+
+
 
         //TODO check if json data are valid json object
 
         //TODO add logic which notifications to show
-        createNotification(0, "Brīdinājums", "Laiks ārā solās būt īpaši ledaini auksts - saģērbies kārtīgi! Un neaizmirsti cimdus un cepuri!", R.drawable.picture );
-        createNotification(1, "Novēlējums", "Lai tev forša diena!", R.drawable.picture );
+        createNotification(0, "Ledains aukstumiņš", "Laiks ārā solās būt īpaši ledaini auksts - saģērbies kārtīgi! Un neaizmirsti cimdus un cepuri!", R.drawable.picture );
+        createNotification(1, "Lai tev forša diena!", "", R.drawable.picture );
         Toast.makeText(this, "Notifications Created", Toast.LENGTH_SHORT).show();
     }
 
